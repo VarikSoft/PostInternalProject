@@ -7,25 +7,33 @@ public class PostService
 {
     private readonly IPostReadRepository _readRepository;
     private readonly IPostWriteRepository _writeRepository;
+    private readonly ISystemValueProvider _systemValueProvider;
 
     public PostService(
         IPostReadRepository readRepository,
-        IPostWriteRepository writeRepository)
+        IPostWriteRepository writeRepository,
+        ISystemValueProvider systemValueProvider)
     {
         _readRepository = readRepository;
         _writeRepository = writeRepository;
+        _systemValueProvider = systemValueProvider;
     }
 
     public async Task<PostResponse> CreatePostAsync(
         CreatePostRequest request,
         CancellationToken cancellationToken)
     {
-        var post = new Post(request.Title, request.Body, request.AuthorId);
+        var post = new Post(
+            request.Title,
+            request.Body,
+            request.AuthorId,
+            _systemValueProvider.NewGuid(),
+            _systemValueProvider.UtcNow);
 
         await _writeRepository.AddAsync(post, cancellationToken);
         await _writeRepository.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
+        return post.ToResponse();
     }
 
     public async Task<PostResponse?> GetPostByIdAsync(
@@ -34,7 +42,7 @@ public class PostService
     {
         var post = await _readRepository.GetByIdAsync(id, cancellationToken);
 
-        return post is null ? null : MapToResponse(post);
+        return post is null ? null : post.ToResponse();
     }
 
     public async Task<IReadOnlyList<PostListItemResponse>> ListPostsAsync(
@@ -51,7 +59,7 @@ public class PostService
             pageSize,
             cancellationToken);
 
-        return posts.Select(MapToListItemResponse).ToList();
+        return posts.Select(post => post.ToListItemResponse()).ToList();
     }
 
     public async Task<PostResponse?> UpdatePostAsync(
@@ -63,11 +71,11 @@ public class PostService
 
         if (post is null) return null;
 
-        post.Update(request.Title, request.Body, request.RequesterId);
+        post.Update(request.Title, request.Body, request.RequesterId, request.ExpectedVersion);
 
         await _writeRepository.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
+        return post.ToResponse();
     }
 
     public async Task<PostResponse?> PublishPostAsync(
@@ -79,11 +87,11 @@ public class PostService
 
         if (post is null) return null;
 
-        post.Publish(request.RequesterId);
+        post.Publish(request.RequesterId, request.ExpectedVersion, _systemValueProvider.UtcNow);
 
         await _writeRepository.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
+        return post.ToResponse();
     }
 
     public async Task<PostResponse?> UnpublishPostAsync(
@@ -95,33 +103,10 @@ public class PostService
 
         if (post is null) return null;
 
-        post.Unpublish(request.RequesterId);
+        post.Unpublish(request.RequesterId, request.ExpectedVersion);
 
         await _writeRepository.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
-    }
-
-    private static PostResponse MapToResponse(Post post)
-    {
-        return new PostResponse(
-            post.Id,
-            post.Title,
-            post.Body,
-            post.AuthorId,
-            post.Status.ToString(),
-            post.CreatedAt,
-            post.PublishedAt);
-    }
-
-    private static PostListItemResponse MapToListItemResponse(Post post)
-    {
-        return new PostListItemResponse(
-            post.Id,
-            post.Title,
-            post.AuthorId,
-            post.Status.ToString(),
-            post.CreatedAt,
-            post.PublishedAt);
+        return post.ToResponse();
     }
 }

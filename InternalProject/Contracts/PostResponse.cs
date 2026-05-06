@@ -7,5 +7,6 @@ public record PostResponse(
     Guid AuthorId,
     string Status,
     DateTime CreatedAt,
-    DateTime?  PublishedAt
+    DateTime? PublishedAt,
+    int Version
     );

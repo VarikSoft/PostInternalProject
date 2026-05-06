@@ -1,5 +1,6 @@
 ﻿namespace InternalProject.Contracts;
 
 public record PublishPostRequest(
-    Guid RequesterId
+    Guid RequesterId,
+    int ExpectedVersion
     );

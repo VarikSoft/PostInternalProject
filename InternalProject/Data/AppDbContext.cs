@@ -29,6 +29,10 @@ public class AppDbContext : DbContext
                 .HasConversion<string>()
                 .IsRequired();
 
+            builder.Property(p => p.Version)
+                .IsConcurrencyToken()
+                .IsRequired();
+
             builder.HasIndex(p => p.Status);
             builder.HasIndex(p => p.AuthorId);
             builder.HasIndex(p => p.PublishedAt);

@@ -16,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddScoped<PostService>();
+builder.Services.AddSingleton<ISystemValueProvider, SystemValueProvider>();
 builder.Services.AddScoped<EfPostRepository>();
 builder.Services.AddScoped<IPostReadRepository>(sp => sp.GetRequiredService<EfPostRepository>());
 builder.Services.AddScoped<IPostWriteRepository>(sp => sp.GetRequiredService<EfPostRepository>());

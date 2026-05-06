@@ -55,6 +55,13 @@ public class EfPostRepository : IPostReadRepository, IPostWriteRepository
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new ConcurrencyConflictException("Post was modified by another user. Reload it and try again.", ex);
+        }
     }
 }

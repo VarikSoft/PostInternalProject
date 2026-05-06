@@ -6,5 +6,6 @@ public record PostListItemResponse(
     Guid AuthorId,
     string Status,
     DateTime CreatedAt,
-    DateTime? PublishedAt
+    DateTime? PublishedAt,
+    int Version
     );

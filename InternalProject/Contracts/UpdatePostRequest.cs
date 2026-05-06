@@ -3,5 +3,6 @@
 public record UpdatePostRequest(
     string Title,
     string Body,
-    Guid RequesterId
+    Guid RequesterId,
+    int ExpectedVersion
     );
