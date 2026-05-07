@@ -12,6 +12,7 @@ The project currently implements:
 - Swagger/OpenAPI UI for testing the API in a browser.
 - Entity Framework Core with SQLite as the persistence layer.
 - Automatic SQLite database creation on application startup.
+- Centralized NuGet package version management.
 - A simple post domain model with lifecycle states.
 - Version-based optimistic concurrency for post mutations.
 - Repository interfaces for separating read and write data access.
@@ -30,9 +31,14 @@ The project currently implements:
 - SQLite
 - Swashbuckle / Swagger
 
+Package versions are managed centrally in `Directory.Packages.props`.
+Project files should reference packages without inline `Version` attributes so
+the API project and future test projects use the same dependency versions.
+
 ## Project Structure
 
 ```text
+Directory.Packages.props
 InternalProject/
   Application/
     ISystemValueProvider.cs
