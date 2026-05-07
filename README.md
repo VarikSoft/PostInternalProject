@@ -18,6 +18,8 @@ The project currently implements:
 - Application service layer that contains post use cases.
 - Injectable system value provider for deterministic GUID/time usage.
 - Global exception handling middleware with JSON error responses and server-side logging.
+- Health check endpoints for application and database readiness.
+- Console/debug logging configuration for clearer local diagnostics.
 - Basic filtering and pagination for the post list endpoint.
 
 ## Technology Stack
@@ -55,6 +57,9 @@ InternalProject/
     PostStatus.cs
   Infrastructure/
     EfPostRepository.cs
+    HealthChecks/
+      DatabaseHealthCheck.cs
+      HealthCheckResponseWriter.cs
     SystemValueProvider.cs
     Middleware/
       ExceptionHandlingMiddleware.cs
@@ -251,12 +256,45 @@ Current mappings:
 
 The middleware logs handled validation, authorization, concurrency, and
 unexpected errors internally while returning safe JSON messages to clients.
+Logging is configured to write application diagnostics to console and debug
+output.
 
 Error response format:
 
 ```json
 {
   "message": "Error message"
+}
+```
+
+## Health Checks
+
+The API exposes JSON health check endpoints:
+
+- `GET /health/live` checks whether the application process is running.
+- `GET /health/ready` checks whether dependencies required for handling traffic are available.
+- `GET /health` runs all configured checks.
+
+Example response:
+
+```json
+{
+  "status": "Healthy",
+  "totalDurationMilliseconds": 39.1584,
+  "checks": [
+    {
+      "name": "self",
+      "status": "Healthy",
+      "description": "Application is running.",
+      "durationMilliseconds": 0.0212
+    },
+    {
+      "name": "database",
+      "status": "Healthy",
+      "description": "Database connection is available.",
+      "durationMilliseconds": 37.6742
+    }
+  ]
 }
 ```
 
@@ -342,4 +380,4 @@ The following parts are not implemented yet:
 - Automated tests.
 - DTO validation attributes.
 - Separate development and production database setup.
-- Structured logging configuration.
+- External log aggregation.
